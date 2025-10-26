@@ -1,0 +1,207 @@
+/* --- Card Spotlight / Bento Effect --- */
+.home-page {
+  width: 100%;
+  padding: 2rem 1rem;
+}
+
+.content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.hero {
+  text-align: center;
+  padding: 1rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.card-spotlight {
+  position: relative;
+  border-radius: 1.5rem;
+  border: 1px solid #222;
+  background-color: #111;
+  padding: 2rem 1.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-spotlight:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(211, 211, 211, 0.6);
+}
+
+.card-spotlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 80%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.card-spotlight:hover::before {
+  opacity: 0.6;
+}
+
+/* --- Stat Cards --- */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border-radius: 1.5rem;
+  background: rgba(255,255,255,0.04);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card h3 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  color: #9fb0ff;
+  line-height: 1.4;
+}
+
+.stat-number {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin: 0.25rem 0;
+  color: #cbd2ff;
+}
+
+.stat-link {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  color: #a8b5ff;
+  text-decoration: none;
+}
+
+.stat-link:hover {
+  text-decoration: underline;
+}
+
+/* --- Feature Cards --- */
+.feature {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.03);
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+}
+
+
+.feature h4 {
+  color: #cbd2ff;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.feature p {
+  color: rgba(255,255,255,0.8);
+  line-height: 1.6;
+  margin: 0;
+}
+
+
+/* --- Quick Action Buttons --- */
+.action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  padding: 1.25rem 1rem;
+  color: #a17979;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  background: linear-gradient(135deg, #000000 0%, #18022f 100%);
+  color: #ffffff;
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(5, 2, 84, 0.6);
+}
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.action-icon {
+  font-size: 1.8rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .stats-grid,
+  .features-grid,
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+  
+  .hero p {
+    font-size: 1rem;
+  }
+}
+.card-spotlight {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: #111;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.spotlight-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mouse-x) var(--mouse-y),
+                              var(--spotlight-color),
+                              transparent 80%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  mix-blend-mode: screen;
+}
+
+.card-spotlight:hover .spotlight-overlay {
+  opacity: 1;
+}

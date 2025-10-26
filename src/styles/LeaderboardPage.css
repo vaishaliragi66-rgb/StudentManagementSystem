@@ -1,0 +1,17 @@
+/* LeaderboardPage styles - reuses the existing LeaderBoard styles as base */
+@import './LeaderBoard.css';
+
+/* Page-specific overrides */
+.leaderboard-page {
+  margin-top: 2rem;
+}
+
+.leaderboard-page .page-header h1 {
+  font-size: 1.6rem;
+}
+
+/* Ensure the leaderboard doesn't cause horizontal overflow on small screens */
+.leaderboard-page {
+  box-sizing: border-box;
+  max-width: 100%;
+}

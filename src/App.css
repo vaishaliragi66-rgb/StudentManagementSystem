@@ -1,0 +1,67 @@
+/* Global reset and layout tweaks */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Raleway', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+html, body {
+  /* Prevent accidental horizontal overflow caused by wide elements */
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  /* Unified dark background */
+  background: #242424;
+  color: #ffffff;
+}
+
+.app-container {
+  min-height: 100vh;
+  /* content sits on top of the dark app background; keep container transparent */
+  background: transparent;
+}
+
+/* When sidebar is visible on desktop, push main content to the right */
+@media (min-width: 769px) {
+  .main-content {
+    margin-left: 240px; /* equal to sidebar width */
+    transition: margin-left 0.2s;
+  }
+}
+
+/* Buttons keep contrast on dark background */
+.btn-primary {
+  background: linear-gradient(90deg, #000000 0%, #292929 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(90deg, #060029 0%, #191919 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(2, 0, 96, 0.3);
+}
+
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+}

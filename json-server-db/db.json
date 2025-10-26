@@ -1,0 +1,236 @@
+{
+  "students": [
+    {
+      "id": "1",
+      "studentId": "S001",
+      "firstName": "Vikram",
+      "lastName": "Nair",
+      "email": "vikram@univ.edu",
+      "phoneNumber": "9876543210",
+      "department": "Computer Science",
+      "classSection": "A"
+    },
+    {
+      "id": "2",
+      "studentId": "S002",
+      "firstName": "Priya",
+      "lastName": "Sharma",
+      "email": "priya@univ.edu",
+      "phoneNumber": "9876543211",
+      "department": "Computer Science",
+      "classSection": "A"
+    },
+    {
+      "id": "3",
+      "studentId": "S003",
+      "firstName": "Aditya",
+      "lastName": "Rao",
+      "email": "aditya@univ.edu",
+      "phoneNumber": "9876543212",
+      "department": "Electronics",
+      "classSection": "B"
+    }
+  ],
+  "teachers": [
+    {
+      "id": "1",
+      "teacherId": "T001",
+      "firstName": "Dr. Rajesh",
+      "lastName": "Kumar",
+      "email": "rajesh@univ.edu",
+      "department": "Computer Science"
+    },
+    {
+      "id": "2",
+      "teacherId": "T002",
+      "firstName": "Dr. Anjali",
+      "lastName": "Mehta",
+      "email": "anjali@univ.edu",
+      "department": "Electronics"
+    }
+  ],
+  "courses": [
+    {
+      "id": "1",
+      "courseId": "C101",
+      "courseCode": "CS101",
+      "courseName": "Programming Fundamentals",
+      "credits": 4,
+      "teacherId": "T001"
+    },
+    {
+      "id": "2",
+      "courseId": "C102",
+      "courseCode": "CS201",
+      "courseName": "Data Structures",
+      "credits": 4,
+      "teacherId": "T001"
+    },
+    {
+      "id": "3",
+      "courseId": "C103",
+      "courseCode": "EC101",
+      "courseName": "Digital Electronics",
+      "credits": 3,
+      "teacherId": "T002"
+    }
+  ],
+  "enrollments": [
+    {
+      "id": "1",
+      "enrollmentId": "E001",
+      "courseId": "C101",
+      "studentId": "S001",
+      "enrollmentDate": "2024-01-15"
+    },
+    {
+      "id": "2",
+      "enrollmentId": "E002",
+      "courseId": "C102",
+      "studentId": "S001",
+      "enrollmentDate": "2024-01-15"
+    },
+    {
+      "id": "3",
+      "enrollmentId": "E003",
+      "courseId": "C101",
+      "studentId": "S002",
+      "enrollmentDate": "2024-01-15"
+    },
+    {
+      "id": "4",
+      "enrollmentId": "E004",
+      "courseId": "C103",
+      "studentId": "S003",
+      "enrollmentDate": "2024-01-15"
+    }
+  ],
+  "exams": [
+    {
+      "id": "1",
+      "examId": "EX001",
+      "examName": "Programming Fundamentals - Midterm",
+      "examDate": "2024-03-15",
+      "examType": "Written",
+      "totalMarks": 100,
+      "courseId": "C101"
+    },
+    {
+      "id": "2",
+      "examId": "EX002",
+      "examName": "Data Structures - Final",
+      "examDate": "2024-05-20",
+      "examType": "Written",
+      "totalMarks": 100,
+      "courseId": "C102"
+    }
+  ],
+  "results": [
+    {
+      "id": "1",
+      "resultId": "R001",
+      "studentId": "S001",
+      "examId": "EX001",
+      "marksObtained": 85,
+      "grade": "A"
+    },
+    {
+      "id": "2",
+      "resultId": "R002",
+      "studentId": "S002",
+      "examId": "EX001",
+      "marksObtained": 78,
+      "grade": "B+"
+    },
+    {
+      "id": "3",
+      "resultId": "R003",
+      "studentId": "S001",
+      "examId": "EX002",
+      "marksObtained": 92,
+      "grade": "A+"
+    }
+  ],
+  "attendance": [
+    {
+      "id": "1",
+      "attendanceId": "A001",
+      "studentId": "S001",
+      "courseId": "C101",
+      "date": "2024-03-01",
+      "status": "Present"
+    },
+    {
+      "id": "2",
+      "attendanceId": "A002",
+      "studentId": "S001",
+      "courseId": "C101",
+      "date": "2024-03-02",
+      "status": "Present"
+    },
+    {
+      "id": "3",
+      "attendanceId": "A003",
+      "studentId": "S001",
+      "courseId": "C101",
+      "date": "2024-03-03",
+      "status": "Absent"
+    },
+    {
+      "id": "4",
+      "attendanceId": "A004",
+      "studentId": "S002",
+      "courseId": "C101",
+      "date": "2024-03-01",
+      "status": "Present"
+    },
+    {
+      "id": "5",
+      "attendanceId": "A005",
+      "studentId": "S002",
+      "courseId": "C101",
+      "date": "2024-03-02",
+      "status": "Present"
+    },
+    {
+      "id": "6",
+      "attendanceId": "A006",
+      "studentId": "S003",
+      "courseId": "C103",
+      "date": "2024-03-01",
+      "status": "Present"
+    }
+  ],
+  "achievements": [
+    {
+      "id": "1",
+      "achievementId": "ACH001",
+      "studentId": "S001",
+      "problemName": "Two Sum",
+      "platformName": "LeetCode",
+      "dateAchieved": "2024-02-10",
+      "score": 100,
+      "achievementType": "Problem Solved"
+    },
+    {
+      "id": "2",
+      "achievementId": "ACH002",
+      "studentId": "S001",
+      "problemName": "Binary Search",
+      "platformName": "HackerRank",
+      "dateAchieved": "2024-02-15",
+      "score": 95,
+      "achievementType": "Problem Solved"
+    },
+    {
+      "id": "3",
+      "achievementId": "ACH003",
+      "studentId": "S002",
+      "problemName": "Reverse Linked List",
+      "platformName": "LeetCode",
+      "dateAchieved": "2024-02-20",
+      "score": 100,
+      "achievementType": "Problem Solved"
+    }
+  ]
+}

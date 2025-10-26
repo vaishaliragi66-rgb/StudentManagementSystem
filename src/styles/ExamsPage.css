@@ -1,0 +1,246 @@
+.exams-page {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #ffffff;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.8);
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255,255,255,0.8);
+  font-size: 1.1rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+}
+
+.tab:hover {
+  color: #9fb0ff;
+}
+
+.tab.active {
+  color: #9fb0ff;
+  border-bottom-color: #9fb0ff;
+}
+
+.form-container {
+  background: rgba(255,255,255,0.03);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  margin-bottom: 2rem;
+}
+
+.form-container h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #cbd2ff;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.form input,
+.form select {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form input:focus,
+.form select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form button {
+  grid-column: 1 / -1;
+}
+
+.grade-info {
+  grid-column: 1 / -1;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.02);
+  border-radius: 4px;
+}
+
+.exams-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.exam-card {
+  background: rgba(255,255,255,0.03);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  transition: transform 0.2s;
+}
+
+.exam-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.exam-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.exam-header h3 {
+  margin: 0;
+  color: #cbd2ff;
+  font-size: 1.2rem;
+  flex: 1;
+}
+
+.exam-type {
+  background: #14192f;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.exam-details p {
+  margin: 0.5rem 0;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+}
+
+.results-table {
+  background: rgba(255,255,255,0.03);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  overflow-x: auto;
+}
+
+.results-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-table th {
+  background: rgba(255,255,255,0.02);
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.95);
+}
+
+.results-table td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.9);
+}
+
+.results-table tr:hover {
+  background: rgba(255,255,255,0.01);
+}
+
+.grade {
+  font-weight: bold;
+  font-size: 1.1rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* .grade-Aplus {
+  background: #081e0d;
+  color: #155724;
+}
+
+.grade-A {
+  background: #0b4a55;
+  color: #07424d;
+}
+
+.grade-Bplus {
+  background: #4b3a04;
+  color: #856404;
+}
+
+.grade-B {
+  background: #400409;
+  color: #721c24;
+}
+
+.grade-C {
+  background: #53040c;
+  color: #721c24;
+}
+
+.grade-D,
+.grade-F {
+  background: #420207;
+  color: #721c24;
+} */
+
+@media (max-width: 768px) {
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .exams-list {
+    grid-template-columns: 1fr;
+  }
+
+  .exam-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
