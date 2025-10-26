@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { studentAPI } from '../services/api';
+import { supabase } from '../services/supabaseClient';
 import '../styles/StudentsPage.css';
 import { motion } from 'framer-motion';
 
@@ -9,20 +9,19 @@ const pageVariants = {
   exit: { opacity: 0, scale: 0.95 },
 };
 
-
 function StudentsPage() {
   const [students, setStudents] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
   const [formData, setFormData] = useState({
-    studentId: '',
-    firstName: '',
-    lastName: '',
+    student_id: '',
+    first_name: '',
+    last_name: '',
     email: '',
-    phoneNumber: '',
+    phone_number: '',
     department: '',
-    classSection: ''
+    class_section: ''
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,11 +33,14 @@ function StudentsPage() {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const response = await studentAPI.getAll();
-      setStudents(response.data);
+      const { data, error } = await supabase
+        .from('student')
+        .select('*');
+      if (error) throw error;
+      setStudents(data || []);
       setError('');
-    } catch (error) {
-      console.error('Error fetching students:', error);
+    } catch (err) {
+      console.error('Error fetching students:', err);
       setError('Failed to fetch students');
     } finally {
       setLoading(false);
@@ -47,13 +49,13 @@ function StudentsPage() {
 
   const resetForm = () => {
     setFormData({
-      studentId: '',
-      firstName: '',
-      lastName: '',
+      student_id: '',
+      first_name: '',
+      last_name: '',
       email: '',
-      phoneNumber: '',
+      phone_number: '',
       department: '',
-      classSection: ''
+      class_section: ''
     });
     setShowForm(false);
     setEditMode(false);
@@ -64,43 +66,69 @@ function StudentsPage() {
     e.preventDefault();
     try {
       if (editMode) {
-        await studentAPI.update(editId, formData);
+        const { error } = await supabase
+          .from('student')
+          .update({
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            email: formData.email,
+            phone_number: formData.phone_number,
+            department: formData.department,
+            class_section: formData.class_section
+          })
+          .eq('student_id', editId);
+        if (error) throw error;
         alert('Student updated successfully!');
       } else {
-        await studentAPI.create(formData);
+        const { error } = await supabase
+          .from('student')
+          .insert([{
+            student_id: formData.student_id,
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            email: formData.email,
+            phone_number: formData.phone_number,
+            department: formData.department,
+            class_section: formData.class_section
+          }]);
+        if (error) throw error;
         alert('Student added successfully!');
       }
       resetForm();
       fetchStudents();
-    } catch (error) {
-      console.error('Error saving student:', error);
+    } catch (err) {
+      console.error('Error saving student:', err);
       alert('Error saving student. Please try again.');
     }
   };
 
   const handleEdit = (student) => {
     setFormData({
-      studentId: student.studentId,
-      firstName: student.firstName,
-      lastName: student.lastName,
-      email: student.email,
-      phoneNumber: student.phoneNumber || '',
+      student_id: student.student_id,
+      first_name: student.first_name,
+      last_name: student.last_name,
+      email: student.email || '',
+      phone_number: student.phone_number || '',
       department: student.department || '',
-      classSection: student.classSection || ''
+      class_section: student.class_section || ''
     });
     setEditMode(true);
-    setEditId(student.studentId);
+    setEditId(student.student_id);
     setShowForm(true);
   };
 
   const handleDelete = async (studentId) => {
     if (window.confirm('Are you sure you want to delete this student?')) {
       try {
-        await studentAPI.delete(studentId);
+        const { error } = await supabase
+          .from('student')
+          .delete()
+          .eq('student_id', studentId);
+        if (error) throw error;
         alert('Student deleted successfully!');
         fetchStudents();
-      } catch (error) {
-        console.error('Error deleting student:', error);
+      } catch (err) {
+        console.error('Error deleting student:', err);
         alert('Error deleting student. Please try again.');
       }
     }
@@ -111,139 +139,48 @@ function StudentsPage() {
   }
 
   return (
-     <motion.div
+    <motion.div
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={{ duration: 0.5 }}
     >
+      <div className="students-page">
+        <h1>Students</h1>
+        <button onClick={() => setShowForm(true)}>Add Student</button>
 
-    <div className="students-page">
-      <div className="page-header">
-  <h1>Students Management</h1>
-        <button 
-          onClick={() => {
-            if (showForm) {
-              resetForm();
-            } else {
-              setShowForm(true);
-            }
-          }} 
-          className="btn-primary"
-        >
-          {showForm ? 'Cancel' : '+ Add Student'}
-        </button>
-      </div>
-
-      {error && <div className="error-message">{error}</div>}
-
-      {showForm && (
-        <div className="form-container">
-          <h3>{editMode ? 'Edit Student' : 'Add New Student'}</h3>
-          <form onSubmit={handleSubmit} className="form">
-            <input
-              placeholder="Student ID (e.g., S004)"
-              value={formData.studentId}
-              onChange={(e) => setFormData({...formData, studentId: e.target.value})}
-              required
-              disabled={editMode}
-            />
-            <input
-              placeholder="First Name"
-              value={formData.firstName}
-              onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-              required
-            />
-            <input
-              placeholder="Last Name"
-              value={formData.lastName}
-              onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-              required
-            />
-            <input
-              placeholder="Email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              required
-            />
-            <input
-              placeholder="Phone Number"
-              value={formData.phoneNumber}
-              onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
-            />
-            <input
-              placeholder="Department (e.g., Computer Science)"
-              value={formData.department}
-              onChange={(e) => setFormData({...formData, department: e.target.value})}
-            />
-            <input
-              placeholder="Class Section (e.g., A, B)"
-              value={formData.classSection}
-              onChange={(e) => setFormData({...formData, classSection: e.target.value})}
-            />
-            <div className="form-buttons">
-              <button type="submit" className="btn-primary">
-                {editMode ? 'Update Student' : 'Add Student'}
-              </button>
-              <button type="button" onClick={resetForm} className="btn-secondary">
-                Cancel
-              </button>
-            </div>
+        {showForm && (
+          <form className="student-form" onSubmit={handleSubmit}>
+            <input type="text" placeholder="Student ID" value={formData.student_id} onChange={e => setFormData({...formData, student_id: e.target.value})} required />
+            <input type="text" placeholder="First Name" value={formData.first_name} onChange={e => setFormData({...formData, first_name: e.target.value})} required />
+            <input type="text" placeholder="Last Name" value={formData.last_name} onChange={e => setFormData({...formData, last_name: e.target.value})} required />
+            <input type="email" placeholder="Email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+            <input type="text" placeholder="Phone Number" value={formData.phone_number} onChange={e => setFormData({...formData, phone_number: e.target.value})} />
+            <input type="text" placeholder="Department" value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} />
+            <input type="text" placeholder="Class Section" value={formData.class_section} onChange={e => setFormData({...formData, class_section: e.target.value})} />
+            <button type="submit">{editMode ? 'Update' : 'Add'}</button>
+            <button type="button" onClick={resetForm}>Cancel</button>
           </form>
-        </div>
-      )}
-
-      <div className="students-table">
-        {students.length === 0 ? (
-          <p className="no-data">No students found. Add your first student!</p>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Student ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Department</th>
-                <th>Class</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map(student => (
-                <tr key={student.id}>
-                  <td>{student.studentId}</td>
-                  <td>{student.firstName} {student.lastName}</td>
-                  <td>{student.email}</td>
-                  <td>{student.phoneNumber || 'N/A'}</td>
-                  <td>{student.department || 'N/A'}</td>
-                  <td>{student.classSection || 'N/A'}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button 
-                        onClick={() => handleEdit(student)}
-                        className="btn-edit"
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(student.studentId)}
-                        className="btn-danger"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         )}
+
+        <div className="students-list">
+          {students.map(student => (
+            <div key={student.student_id} className="student-card">
+              <h3>{student.first_name} {student.last_name}</h3>
+              <p>ID: {student.student_id}</p>
+              <p>Email: {student.email || '-'}</p>
+              <p>Phone: {student.phone_number || '-'}</p>
+              <p>Dept: {student.department || '-'}</p>
+              <p>Class: {student.class_section || '-'}</p>
+              <button onClick={() => handleEdit(student)}>Edit</button>
+              <button onClick={() => handleDelete(student.student_id)}>Delete</button>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
     </motion.div>
   );
 }
+
 export default StudentsPage;

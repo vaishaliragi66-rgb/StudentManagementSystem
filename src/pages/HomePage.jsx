@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { studentAPI, courseAPI, attendanceAPI, examAPI, resultAPI } from '../services/api';
+import React, { useEffect, useState, useRef } from 'react';
+import { supabase } from '../services/supabaseClient';
 import { Link } from 'react-router-dom';
 import '../styles/HomePage.css';
 import LeaderboardPage from './LeaderboardPage';
@@ -11,7 +11,8 @@ const pageVariants = {
   exit: { opacity: 0, scale: 0.95 },
 };
 
-const SpotlightCard = ({ children, className = '', spotlightColor = 'rgba(255,255,255,0.4)' }) => {
+// SpotlightCard: simplified, no internal key cloning
+const SpotlightCard = React.memo(({ children, className = '', spotlightColor = 'rgba(255,255,255,0.4)' }) => {
   const divRef = useRef(null);
 
   const handleMouseMove = e => {
@@ -25,12 +26,11 @@ const SpotlightCard = ({ children, className = '', spotlightColor = 'rgba(255,25
 
   return (
     <div ref={divRef} onMouseMove={handleMouseMove} className={`card-spotlight ${className}`}>
-      <div className="spotlight-overlay"></div>
+      <div className="spotlight-overlay" />
       {children}
     </div>
   );
-};
-
+});
 
 function HomePage() {
   const [stats, setStats] = useState({ 
@@ -50,24 +50,31 @@ function HomePage() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const [s, c, a, e, r] = await Promise.all([
-        studentAPI.getAll(),
-        courseAPI.getAll(),
-        attendanceAPI.getAll(),
-        examAPI.getAll(),
-        resultAPI.getAll()
+      const [studentsRes, coursesRes, attendanceRes, examsRes, resultsRes] = await Promise.all([
+        supabase.from('student').select('*'),
+        supabase.from('course').select('*'),
+        supabase.from('attendance').select('*'),
+        supabase.from('exam').select('*'),
+        supabase.from('exam_results').select('*')
       ]);
       
+      if (studentsRes.error) throw studentsRes.error;
+      if (coursesRes.error) throw coursesRes.error;
+      if (attendanceRes.error) throw attendanceRes.error;
+      if (examsRes.error) throw examsRes.error;
+      if (resultsRes.error) throw resultsRes.error;
+      
       setStats({ 
-        students: s.data.length, 
-        courses: c.data.length, 
-        attendance: a.data.length,
-        exams: e.data.length,
-        results: r.data.length
+        students: studentsRes.data.length, 
+        courses: coursesRes.data.length, 
+        attendance: attendanceRes.data.length,
+        exams: examsRes.data.length,
+        results: resultsRes.data.length
       });
       
-      // Get last 3 students
-      setRecentStudents(s.data.slice(-3).reverse());
+      // Last 3 students
+      const recentStuds = studentsRes.data.slice(-3).reverse();
+      setRecentStudents(recentStuds);
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
@@ -85,68 +92,61 @@ function HomePage() {
     );
   }
 
-return (
-     <motion.div
-        variants={pageVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        transition={{ duration: 0.5 }}
-      >
-  <div className="home-page">
-    <div className="hero">
-      <h1>Student Management System</h1>
-      <p>Manage students, attendance, and academic performance efficiently</p>
-    </div>
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.5 }}
+    >
+      <div className="home-page">
+        <div className="hero">
+          <h1>Student Management System</h1>
+          <p>Manage students, attendance, and academic performance efficiently</p>
+        </div>
 
-    <div className="content-container">
-      <div className="stats-grid">
-        <SpotlightCard className="stat-card">
-          <h3>Total Students</h3>
-          <p className="stat-number">{stats.students}</p>
-        </SpotlightCard>
-        <SpotlightCard className="stat-card">
-          <h3>Total Courses</h3>
-          <p className="stat-number">{stats.courses}</p>
-        </SpotlightCard>
-        <SpotlightCard className="stat-card">
-          <h3>Attendance Records</h3>
-          <p className="stat-number">{stats.attendance}</p>
-        </SpotlightCard>
-        <SpotlightCard className="stat-card">
-          <h3>Exams</h3>
-          <p className="stat-number">{stats.exams}</p>
-        </SpotlightCard>
-        <SpotlightCard className="stat-card">
-          <h3>Results</h3>
-          <p className="stat-number">{stats.results}</p>
-        </SpotlightCard>
-      </div>
+        <div className="content-container">
+          <div className="stats-grid">
+            {[
+              { key: 'students', title: 'Total Students', value: stats.students },
+              { key: 'courses', title: 'Total Courses', value: stats.courses },
+              { key: 'attendance', title: 'Attendance Records', value: stats.attendance },
+              { key: 'exams', title: 'Exams', value: stats.exams },
+              { key: 'results', title: 'Results', value: stats.results }
+            ].map(stat => (
+              <SpotlightCard key={stat.key} className="stat-card">
+                <h3>{stat.title}</h3>
+                <p className="stat-number">{stat.value}</p>
+              </SpotlightCard>
+            ))}
+          </div>
 
-      <div className="recent-section">
-        <h2>Recently Added Students</h2>
-        <div className="recent-students">
-          {recentStudents.map((s) => (
-            <div className="recent-student-card" key={s.id || s.studentId || s._id}>
-              <h4>{s.firstName} {s.lastName}</h4>
-              <p>{s.department || ''} {s.classSection ? `· ${s.classSection}` : ''}</p>
-              <small style={{color: '#999'}}>{s.studentId || s.id || ''}</small>
+          <div className="recent-section">
+            <h2>Recently Added Students</h2>
+            <div className="recent-students">
+              {recentStudents.map(s => (
+                <div className="recent-student-card" key={s.student_id || s.id || s._id}>
+                  <h4>{s.first_name} {s.last_name}</h4>
+                  <p>{s.department || ''} {s.class_section ? `· ${s.class_section}` : ''}</p>
+                  <small style={{ color: '#999' }}>{s.student_id || s.id || ''}</small>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Leaderboard embedded on homepage */}
+          <div className="home-leaderboard">
+            <LeaderboardPage />
+          </div>
+
+          <div className="view-more">
+            <Link to="/students">View All Students →</Link>
+          </div>
         </div>
       </div>
-
-      {/* Leaderboard embedded on homepage */}
-      <div className="home-leaderboard">
-        <LeaderboardPage />
-      </div>
-
-      <div className="view-more">
-      <Link to="/students">View All Students →</Link>
-    </div>
-    </div>
-  </div>
     </motion.div>
-);
+  );
 }
+
 export default HomePage;

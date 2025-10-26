@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { attendanceAPI, studentAPI, courseAPI } from '../services/api';
+import { supabase } from '../services/supabaseClient';
 import '../styles/AttendancePage.css';
 import { motion } from 'framer-motion';
 
@@ -9,7 +9,6 @@ const pageVariants = {
   exit: { opacity: 0, scale: 0.95 },
 };
 
-
 function AttendancePage() {
   const [attendance, setAttendance] = useState([]);
   const [students, setStudents] = useState([]);
@@ -17,9 +16,9 @@ function AttendancePage() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    attendanceId: '',
-    studentId: '',
-    courseId: '',
+    attendance_id: '',
+    student_id: '',
+    course_id: '',
     date: new Date().toISOString().split('T')[0],
     status: 'Present'
   });
@@ -31,14 +30,20 @@ function AttendancePage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [a, s, c] = await Promise.all([
-        attendanceAPI.getAll(),
-        studentAPI.getAll(),
-        courseAPI.getAll()
+
+      const [stuRes, courseRes, attRes] = await Promise.all([
+        supabase.from('student').select('*'),
+        supabase.from('course').select('*'),
+        supabase.from('attendance').select('*')
       ]);
-      setAttendance(a.data);
-      setStudents(s.data);
-      setCourses(c.data);
+
+      if (stuRes.error) throw stuRes.error;
+      if (courseRes.error) throw courseRes.error;
+      if (attRes.error) throw attRes.error;
+
+      setStudents(stuRes.data);
+      setCourses(courseRes.data);
+      setAttendance(attRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -56,9 +61,12 @@ function AttendancePage() {
     try {
       const attendanceData = {
         ...formData,
-        attendanceId: formData.attendanceId || generateAttendanceId()
+        attendance_id: formData.attendance_id || generateAttendanceId()
       };
-      await attendanceAPI.create(attendanceData);
+
+      const { error } = await supabase.from('attendance').insert([attendanceData]);
+      if (error) throw error;
+
       setFormData({
         attendanceId: '',
         studentId: '',
@@ -75,15 +83,15 @@ function AttendancePage() {
     }
   };
 
-  const calculateAttendancePercentage = (studentId) => {
-    const studentAttendance = attendance.filter(a => a.studentId === studentId);
+  const calculateAttendancePercentage = (student_id) => {
+    const studentAttendance = attendance.filter(a => a.student_id === student_id);
     if (studentAttendance.length === 0) return 0;
     const present = studentAttendance.filter(a => a.status === 'Present').length;
     return Math.round((present / studentAttendance.length) * 100);
   };
 
-  const getAttendanceCount = (studentId) => {
-    const studentAttendance = attendance.filter(a => a.studentId === studentId);
+  const getAttendanceCount = (student_id) => {
+    const studentAttendance = attendance.filter(a => a.student_id === student_id);
     const present = studentAttendance.filter(a => a.status === 'Present').length;
     const total = studentAttendance.length;
     return { present, total };
@@ -94,7 +102,6 @@ function AttendancePage() {
   }
 
   return (
-    
     <motion.div
       variants={pageVariants}
       initial="initial"
@@ -102,129 +109,129 @@ function AttendancePage() {
       exit="exit"
       transition={{ duration: 0.6, ease: 'easeInOut' }}
     >
-
-    <div className="attendance-page">
-      <div className="page-header">
-  <h1>Attendance Management</h1>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary">
-          {showForm ? 'Cancel' : '+ Mark Attendance'}
-        </button>
-      </div>
-
-      {showForm && (
-        <div className="form-container">
-          <h3>Mark Attendance</h3>
-          <form onSubmit={handleSubmit} className="form">
-            <input
-              placeholder="Attendance ID (auto-generated if empty)"
-              value={formData.attendanceId}
-              onChange={(e) => setFormData({...formData, attendanceId: e.target.value})}
-            />
-            <select
-              value={formData.studentId}
-              onChange={(e) => setFormData({...formData, studentId: e.target.value})}
-              required
-            >
-              <option value="">Select Student</option>
-              {students.map(s => (
-                <option key={s.id} value={s.studentId}>
-                  {s.studentId} - {s.firstName} {s.lastName}
-                </option>
-              ))}
-            </select>
-            <select
-              value={formData.courseId}
-              onChange={(e) => setFormData({...formData, courseId: e.target.value})}
-              required
-            >
-              <option value="">Select Course</option>
-              {courses.map(c => (
-                <option key={c.id} value={c.courseId}>
-                  {c.courseCode} - {c.courseName}
-                </option>
-              ))}
-            </select>
-            <input
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({...formData, date: e.target.value})}
-              required
-            />
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({...formData, status: e.target.value})}
-            >
-              <option value="Present">Present</option>
-              <option value="Absent">Absent</option>
-            </select>
-            <button type="submit" className="btn-primary">Record Attendance</button>
-          </form>
+      <div className="attendance-page">
+        <div className="page-header">
+          <h1>Attendance Management</h1>
+          <button onClick={() => setShowForm(!showForm)} className="btn-primary">
+            {showForm ? 'Cancel' : '+ Mark Attendance'}
+          </button>
         </div>
-      )}
 
-      <div className="attendance-stats">
-        <h2>Attendance Summary by Student</h2>
-        {students.length === 0 ? (
-          <p className="no-data">No students found.</p>
-        ) : (
-          <div className="stats-grid">
-            {students.map(student => {
-              const percentage = calculateAttendancePercentage(student.studentId);
-              const { present, total } = getAttendanceCount(student.studentId);
-              return (
-                <div key={student.id} className="stat-card">
-                  <h4>{student.firstName} {student.lastName}</h4>
-                  <div className={`percentage ${percentage >= 75 ? 'good' : percentage >= 50 ? 'average' : 'poor'}`}>
-                    {percentage}%
-                  </div>
-                  <p className="attendance-count">{present}/{total} classes attended</p>
-                  <small>{student.studentId}</small>
-                </div>
-              );
-            })}
+        {showForm && (
+          <div className="form-container">
+            <h3>Mark Attendance</h3>
+            <form onSubmit={handleSubmit} className="form">
+              <input
+                placeholder="Attendance ID (auto-generated if empty)"
+                value={formData.attendanceId}
+                onChange={(e) => setFormData({...formData, attendanceId: e.target.value})}
+              />
+              <select
+                value={formData.studentId}
+                onChange={(e) => setFormData({...formData, studentId: e.target.value})}
+                required
+              >
+                <option value="">Select Student</option>
+                {students.map(s => (
+                  <option key={s.student_id} value={s.student_id}>
+                    {s.student_id} - {s.first_name} {s.last_name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={formData.courseId}
+                onChange={(e) => setFormData({...formData, courseId: e.target.value})}
+                required
+              >
+                <option value="">Select Course</option>
+                {courses.map(c => (
+                  <option key={c.course_id} value={c.course_id}>
+                    {c.course_code} - {c.course_name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({...formData, date: e.target.value})}
+                required
+              />
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({...formData, status: e.target.value})}
+              >
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+              </select>
+              <button type="submit" className="btn-primary">Record Attendance</button>
+            </form>
           </div>
         )}
-      </div>
 
-      <div className="attendance-table">
-        <h2>Recent Attendance Records</h2>
-        {attendance.length === 0 ? (
-          <p className="no-data">No attendance records found.</p>
-        ) : (
-          <div className="table-wrapper">
-            <table>
-            <thead>
-              <tr>
-                <th>Attendance ID</th>
-                <th>Student</th>
-                <th>Course</th>
-                <th>Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {attendance.slice().reverse().map((record) => {
-                const student = students.find(s => s.studentId === record.studentId);
-                const course = courses.find(c => c.courseId === record.courseId);
+        <div className="attendance-stats">
+          <h2>Attendance Summary by Student</h2>
+          {students.length === 0 ? (
+            <p className="no-data">No students found.</p>
+          ) : (
+            <div className="stats-grid">
+              {students.map(student => {
+                const percentage = calculateAttendancePercentage(student.student_id);
+                const { present, total } = getAttendanceCount(student.student_id);
                 return (
-                  <tr key={record.id}>
-                    <td>{record.attendanceId}</td>
-                    <td>{student ? `${student.firstName} ${student.lastName}` : 'Unknown'}</td>
-                    <td>{course ? course.courseName : 'Unknown'}</td>
-                    <td>{new Date(record.date).toLocaleDateString()}</td>
-                    <td className={record.status === 'Present' ? 'present' : 'absent'}>
-                      {record.status}
-                    </td>
-                  </tr>
+                  <div key={student.student_id} className="stat-card">
+                    <h4>{student.first_name} {student.last_name}</h4>
+                    <div className={`percentage ${percentage >= 75 ? 'good' : percentage >= 50 ? 'average' : 'poor'}`}>
+                      {percentage}%
+                    </div>
+                    <p className="attendance-count">{present}/{total} classes attended</p>
+                    <small>{student.student_id}</small>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+
+        <div className="attendance-table">
+          <h2>Recent Attendance Records</h2>
+          {attendance.length === 0 ? (
+            <p className="no-data">No attendance records found.</p>
+          ) : (
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Attendance ID</th>
+                    <th>Student</th>
+                    <th>Course</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {attendance.slice().reverse().map((record) => {
+                    const student = students.find(s => s.student_id === record.student_id);
+                    const course = courses.find(c => c.course_id === record.course_id);
+                    return (
+                      <tr key={record.attendance_id}>
+                        <td>{record.attendance_id}</td>
+                        <td>{student ? `${student.first_name} ${student.last_name}` : 'Unknown'}</td>
+                        <td>{course ? course.course_name : 'Unknown'}</td>
+                        <td>{new Date(record.date).toLocaleDateString()}</td>
+                        <td className={record.status === 'Present' ? 'present' : 'absent'}>
+                          {record.status}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </motion.div>
   );
 }
+
 export default AttendancePage;
