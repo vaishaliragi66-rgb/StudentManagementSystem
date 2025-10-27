@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { achievementAPI, studentAPI } from '../services/api';
+import { supabase } from '../services/supabaseClient';
 import '../styles/LeaderboardPage.css';
 
 function LeaderboardPage() {
@@ -8,23 +8,42 @@ function LeaderboardPage() {
 
   useEffect(() => {
     let mounted = true;
-    const load = async () => {
-      try {
-        const [achRes, stuRes] = await Promise.all([
-          achievementAPI.getAll(),
-          studentAPI.getAll()
-        ]);
-        const achievements = (achRes && achRes.data) || [];
-        const students = (stuRes && stuRes.data) || [];
 
-        const scores = students.map(s => {
-          const total = achievements
-            .filter(a => a.studentId === s.studentId)
-            .reduce((sum, a) => sum + (a.score || 0), 0);
-          return { student: s, total };
+    const loadLeaderboard = async () => {
+      try {
+        // Fetch students
+        const { data: students, error: stuError } = await supabase
+          .from('student')
+          .select('*');
+        if (stuError) throw stuError;
+
+        // Fetch coding achievements
+        const { data: achievements, error: achError } = await supabase
+          .from('coding_achievements')
+          .select('*');
+        if (achError) throw achError;
+
+        // Calculate total scores
+        const scores = students.map(student => {
+          const studentAchievements = achievements
+            .filter(a => a.student_id === student.student_id);
+          
+          const total = studentAchievements.reduce((sum, a) => 
+            sum + (Number(a.codeforces_solved || 0) + Number(a.leetcode_solved || 0)), 0);
+          
+          return { 
+            student, 
+            total,
+            codeforcesProblems: studentAchievements
+              .reduce((sum, a) => sum + Number(a.codeforces_solved || 0), 0),
+            leetcodeProblems: studentAchievements
+              .reduce((sum, a) => sum + Number(a.leetcode_solved || 0), 0)
+          };
         });
 
+        // Sort descending
         scores.sort((a, b) => b.total - a.total);
+
         if (mounted) setLeaderboard(scores.slice(0, 5));
       } catch (err) {
         console.error('Leaderboard load error:', err);
@@ -32,7 +51,9 @@ function LeaderboardPage() {
         if (mounted) setLoading(false);
       }
     };
-    load();
+
+    loadLeaderboard();
+
     return () => { mounted = false; };
   }, []);
 
@@ -46,9 +67,18 @@ function LeaderboardPage() {
       ) : (
         <ol>
           {leaderboard.map(entry => (
-            <li key={entry.student.id || entry.student.studentId}>
-              <strong>{entry.student.firstName} {entry.student.lastName}</strong>
-              <span style={{marginLeft: '8px', color: '#9b59b6'}}>{entry.total} pts</span>
+            <li key={entry.student.student_id}>
+              <div className="student-name">
+                <strong>{entry.student.first_name} {entry.student.last_name}</strong>
+                <small>{entry.student.student_id}</small>
+              </div>
+              <div className="student-score">
+                <span className="total-problems">{entry.total} problems</span>
+                <div className="platform-breakdown">
+                  <small>CF: {entry.codeforcesProblems}</small>
+                  <small>LC: {entry.leetcodeProblems}</small>
+                </div>
+              </div>
             </li>
           ))}
         </ol>

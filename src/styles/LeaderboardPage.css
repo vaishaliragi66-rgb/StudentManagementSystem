@@ -1,17 +1,90 @@
-/* LeaderboardPage styles - reuses the existing LeaderBoard styles as base */
-@import './LeaderBoard.css';
-
-/* Page-specific overrides */
-.leaderboard-page {
+.leaderboard-mini {
+  background: var(--background-secondary);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-top: 2rem;
 }
 
-.leaderboard-page .page-header h1 {
-  font-size: 1.6rem;
+.leaderboard-mini h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
 }
 
-/* Ensure the leaderboard doesn't cause horizontal overflow on small screens */
-.leaderboard-page {
-  box-sizing: border-box;
-  max-width: 100%;
+.leaderboard-mini ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leaderboard-mini li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s;
+}
+
+.leaderboard-mini li:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-mini li:hover {
+  background-color: var(--background-hover);
+}
+
+.leaderboard-mini .student-name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.leaderboard-mini .student-name strong {
+  color: var(--text-primary);
+}
+
+.leaderboard-mini .student-name small {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+}
+
+.leaderboard-mini .student-score {
+  text-align: right;
+}
+
+.leaderboard-mini .total-problems {
+  color: var(--primary-color);
+  font-weight: 500;
+  display: block;
+}
+
+.leaderboard-mini .platform-breakdown {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.leaderboard-mini .platform-breakdown small {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.leaderboard-mini .muted {
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 1rem 0;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .leaderboard-mini {
+    padding: 1rem;
+  }
+
+  .leaderboard-mini li {
+    padding: 0.5rem;
+  }
 }
