@@ -17,6 +17,7 @@ function ExamsPage() {
   const [activeTab, setActiveTab] = useState('exams');
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     exam_id: '',
     exam_name: '',
@@ -25,6 +26,7 @@ function ExamsPage() {
     total_marks: 100,
     course_id: ''
   });
+
   const [resultForm, setResultForm] = useState({
     result_id: '',
     student_id: '',
@@ -81,11 +83,18 @@ function ExamsPage() {
   const handleExamSubmit = async (e) => {
     e.preventDefault();
     try {
-      const examData = { ...formData, examId: formData.examId || generateExamId() };
-      const { error } = await supabase.from('exams').insert([examData]);
+      const examData = { ...formData, exam_id: formData.exam_id || generateExamId() };
+      const { error } = await supabase.from('exam').insert([examData]);
       if (error) throw error;
 
-      setFormData({ examId: '', examName: '', examDate: '', examType: 'Written', totalMarks: 100, courseId: '' });
+      setFormData({
+        exam_id: '',
+        exam_name: '',
+        exam_date: '',
+        exam_type: 'Written',
+        total_marks: 100,
+        course_id: ''
+      });
       setShowForm(false);
       fetchData();
       alert('Exam created successfully!');
@@ -98,15 +107,15 @@ function ExamsPage() {
   const handleResultSubmit = async (e) => {
     e.preventDefault();
     try {
-      const exam = exams.find(ex => ex.examId === resultForm.examId);
-      const totalMarks = exam ? exam.totalMarks : 100;
-      const grade = calculateGrade(resultForm.marksObtained, totalMarks);
+      const exam = exams.find(ex => ex.exam_id === resultForm.exam_id);
+      const totalMarks = exam ? exam.total_marks : 100;
+      const grade = calculateGrade(resultForm.marks_obtained, totalMarks);
 
-      const resultData = { ...resultForm, resultId: resultForm.resultId || generateResultId(), grade };
-      const { error } = await supabase.from('results').insert([resultData]);
+      const resultData = { ...resultForm, result_id: resultForm.result_id || generateResultId(), grade };
+      const { error } = await supabase.from('exam_results').insert([resultData]);
       if (error) throw error;
 
-      setResultForm({ resultId: '', studentId: '', examId: '', marksObtained: 0, grade: 'A' });
+      setResultForm({ result_id: '', student_id: '', exam_id: '', marks_obtained: 0, grade: 'A' });
       fetchData();
       alert('Result added successfully!');
     } catch (error) {
@@ -143,19 +152,23 @@ function ExamsPage() {
               <div className="form-container">
                 <h3>Create New Exam</h3>
                 <form onSubmit={handleExamSubmit} className="form">
-                  <input placeholder="Exam ID (auto-generated if empty)" value={formData.examId} onChange={(e) => setFormData({ ...formData, examId: e.target.value })} />
-                  <input placeholder="Exam Name" value={formData.examName} onChange={(e) => setFormData({ ...formData, examName: e.target.value })} required />
-                  <input type="date" value={formData.examDate} onChange={(e) => setFormData({ ...formData, examDate: e.target.value })} required />
-                  <select value={formData.examType} onChange={(e) => setFormData({ ...formData, examType: e.target.value })}>
+                  <input placeholder="Exam ID (auto-generated if empty)" value={formData.exam_id} onChange={(e) => setFormData({ ...formData, exam_id: e.target.value })} />
+                  <input placeholder="Exam Name" value={formData.exam_name} onChange={(e) => setFormData({ ...formData, exam_name: e.target.value })} required />
+                  <input type="date" value={formData.exam_date} onChange={(e) => setFormData({ ...formData, exam_date: e.target.value })} required />
+                  <select value={formData.exam_type} onChange={(e) => setFormData({ ...formData, exam_type: e.target.value })}>
                     <option value="Written">Written</option>
                     <option value="Online">Online</option>
                     <option value="Practical">Practical</option>
                     <option value="Viva">Viva</option>
                   </select>
-                  <input type="number" placeholder="Total Marks" value={formData.totalMarks} onChange={(e) => setFormData({ ...formData, totalMarks: e.target.value })} required min="1" />
-                  <select value={formData.courseId} onChange={(e) => setFormData({ ...formData, courseId: e.target.value })} required>
+                  <input type="number" placeholder="Total Marks" value={formData.total_marks} onChange={(e) => setFormData({ ...formData, total_marks: e.target.value })} required min="1" />
+                  <select value={formData.course_id} onChange={(e) => setFormData({ ...formData, course_id: e.target.value })} required>
                     <option value="">Select Course</option>
-                    {courses.map(c => <option key={c.courseId} value={c.courseId}>{c.courseCode} - {c.courseName}</option>)}
+                    {courses.map(c => (
+                      <option key={c.course_id} value={c.course_id}>
+                        {c.course_code} - {c.course_name}
+                      </option>
+                    ))}
                   </select>
                   <button type="submit" className="btn-primary">Create Exam</button>
                 </form>
@@ -164,18 +177,18 @@ function ExamsPage() {
 
             <div className="exams-list">
               {exams.length === 0 ? <p className="no-data">No exams found. Create your first exam!</p> : exams.map(exam => {
-                const course = courses.find(c => c.courseId === exam.courseId);
-                const examResults = results.filter(r => r.examId === exam.examId);
+                const course = courses.find(c => c.course_id === exam.course_id);
+                const examResults = results.filter(r => r.exam_id === exam.exam_id);
                 return (
-                  <div key={exam.examId} className="exam-card">
+                  <div key={exam.exam_id} className="exam-card">
                     <div className="exam-header">
-                      <h3>{exam.examName}</h3>
-                      <span className="exam-type">{exam.examType}</span>
+                      <h3>{exam.exam_name}</h3>
+                      <span className="exam-type">{exam.exam_type}</span>
                     </div>
                     <div className="exam-details">
-                      <p><strong>Course:</strong> {course ? `${course.courseCode} - ${course.courseName}` : 'Unknown'}</p>
-                      <p><strong>Date:</strong> {new Date(exam.examDate).toLocaleDateString()}</p>
-                      <p><strong>Total Marks:</strong> {exam.totalMarks}</p>
+                      <p><strong>Course:</strong> {course ? `${course.course_code} - ${course.course_name}` : 'Unknown'}</p>
+                      <p><strong>Date:</strong> {new Date(exam.exam_date).toLocaleDateString()}</p>
+                      <p><strong>Total Marks:</strong> {exam.total_marks}</p>
                       <p><strong>Results Submitted:</strong> {examResults.length}</p>
                     </div>
                   </div>
@@ -190,16 +203,24 @@ function ExamsPage() {
             <div className="form-container">
               <h3>Add Exam Result</h3>
               <form onSubmit={handleResultSubmit} className="form">
-                <input placeholder="Result ID (auto-generated if empty)" value={resultForm.resultId} onChange={(e) => setResultForm({ ...resultForm, resultId: e.target.value })} />
-                <select value={resultForm.studentId} onChange={(e) => setResultForm({ ...resultForm, studentId: e.target.value })} required>
+                <input placeholder="Result ID (auto-generated if empty)" value={resultForm.result_id} onChange={(e) => setResultForm({ ...resultForm, result_id: e.target.value })} />
+                <select value={resultForm.student_id} onChange={(e) => setResultForm({ ...resultForm, student_id: e.target.value })} required>
                   <option value="">Select Student</option>
-                  {students.map(s => <option key={s.studentId} value={s.studentId}>{s.studentId} - {s.firstName} {s.lastName}</option>)}
+                  {students.map(s => (
+                    <option key={s.student_id} value={s.student_id}>
+                      {s.student_id} - {s.first_name} {s.last_name}
+                    </option>
+                  ))}
                 </select>
-                <select value={resultForm.examId} onChange={(e) => setResultForm({ ...resultForm, examId: e.target.value })} required>
+                <select value={resultForm.exam_id} onChange={(e) => setResultForm({ ...resultForm, exam_id: e.target.value })} required>
                   <option value="">Select Exam</option>
-                  {exams.map(e => <option key={e.examId} value={e.examId}>{e.examName}</option>)}
+                  {exams.map(e => (
+                    <option key={e.exam_id} value={e.exam_id}>
+                      {e.exam_name}
+                    </option>
+                  ))}
                 </select>
-                <input type="number" placeholder="Marks Obtained" value={resultForm.marksObtained} onChange={(e) => setResultForm({ ...resultForm, marksObtained: e.target.value })} required min="0" />
+                <input type="number" placeholder="Marks Obtained" value={resultForm.marks_obtained} onChange={(e) => setResultForm({ ...resultForm, marks_obtained: e.target.value })} required min="0" />
                 <div className="grade-info"><small>Grade will be auto-calculated based on marks</small></div>
                 <button type="submit" className="btn-primary">Add Result</button>
               </form>
@@ -221,16 +242,16 @@ function ExamsPage() {
                   </thead>
                   <tbody>
                     {results.map(result => {
-                      const student = students.find(s => s.studentId === result.studentId);
-                      const exam = exams.find(e => e.examId === result.examId);
-                      const percentage = exam ? ((result.marksObtained / exam.totalMarks) * 100).toFixed(2) : 0;
+                      const student = students.find(s => s.student_id === result.student_id);
+                      const exam = exams.find(e => e.exam_id === result.exam_id);
+                      const percentage = exam ? ((result.marks_obtained / exam.total_marks) * 100).toFixed(2) : 0;
                       return (
-                        <tr key={result.resultId}>
-                          <td>{result.resultId}</td>
-                          <td>{student ? `${student.firstName} ${student.lastName}` : 'Unknown'}</td>
-                          <td>{exam ? exam.examName : 'Unknown'}</td>
-                          <td>{result.marksObtained}</td>
-                          <td>{exam ? exam.totalMarks : 'N/A'}</td>
+                        <tr key={result.result_id}>
+                          <td>{result.result_id}</td>
+                          <td>{student ? `${student.first_name} ${student.last_name}` : 'Unknown'}</td>
+                          <td>{exam ? exam.exam_name : 'Unknown'}</td>
+                          <td>{result.marks_obtained}</td>
+                          <td>{exam ? exam.total_marks : 'N/A'}</td>
                           <td>{percentage}%</td>
                           <td className={`grade grade-${result.grade.replace('+', 'plus')}`}>{result.grade}</td>
                         </tr>
